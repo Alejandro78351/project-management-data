@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Front Datos</title>
+	<style type="text/css">
+		table {  
+    color: #333;
+    font-family: Helvetica, Arial, sans-serif;
+    width: auto; 
+    border-collapse: 
+    collapse; border-spacing: 0; 
+}
+
+td, th {  
+    border: 1px solid transparent; 
+    height: 30px; 
+    transition: all 0.3s;  
+}
+
+th {  
+    background: #DFDFDF;  
+    font-weight: bold;
+}
+
+td {  
+    background: #FAFAFA;
+    text-align: center;
+}      
+tr:nth-child(even) td { background: #F1F1F1; }        
+tr:nth-child(odd) td { background: #FEFEFE; }  
+tr td:hover { background: #666; color: #FFF; }
+	</style>
+</head>
+<body>
+<button id="total">Total</button>
+<button id="maxb">Max Hours</button>
+
+
+
+      <div id="chart_div"></div>
+      <div id="table_div"></div>
+
+
+      <div>
+
+      	<p id="proj">Proyecto Mas Horas: <span id="prueba"></span> </p>
+      	  
+
+      	<p id="total"> Horas: <span id="resultarea"></span></p>
+      	  
+
+
+      </div>
+
+      <div id="table_div2">
+      	<table id="records_table" >
+                            <thead>
+                                    <tr> 
+
+                                        <th>Fecha</th>
+                                        <th>Nombre</th>
+                                        <th>Proyecto</th>
+                                        <th>Horas</th>
+                                        
+
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                        </table>
+      </div>
+
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+
+
+ <script type="text/javascript">
+
+
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart','table']});
+
+
+      // Set a callback to run when the Google Visualization API is loaded.
+
+
+ 	$("#total").click(function(){
+		$.ajax({
+  	url: "http://localhost:8080/api/projectdata/totalhours",
+  	cache: false,
+  	success: function(response){
+    $("#resultarea").text(response.hours);
+     $("#prueba").text(response.project);
+
+    console.log(response);
+    
+      //google.charts.setOnLoadCallback(drawChart(response.project,response.hours));
+         //  google.charts.setOnLoadCallback(drawTable);
+         var groupDate=true;
+
+         $.each(response.linkedlist , function(key , value){ 
+
+         // First Level
+
+         	var  link=value.date;
+         	var y=value.countProject;
+         	console.log(link);
+
+         		var groupName=true;
+
+         		 $.each(Object.keys(value.outerMap) , function(keyN , valueName){
+
+         		 			 $.each(value.outerMap[valueName] , function(keyP , valueProject){
+         		 			 	var a;
+         		 			 	if (groupDate)
+         		 			 	{
+         		 			 			
+         		 			 		a="<td rowspan="+y+">" + value.date+"</td>";
+         		 			 		groupDate=false;
+         		 			 	}
+         		 			 	else
+         		 			 	{
+         		 			 		a="";
+         		 			 	}  
+         		 			 	if (groupName)
+         		 			 	{
+         		 			 		var x=Object.keys(value.outerMap[valueName]).length;		
+         		 			 		b="<td rowspan="+x+">" + valueName+"</td>";
+         		 			 		groupName=false;
+         		 			 	}
+         		 			 	else
+         		 			 	{
+         		 			 		b="";
+         		 			 	}        		 			 		
+
+
+				         		  $('<tr>').html(a  + b +  "<td>" + keyP + "</td>"+  "<td>" + valueProject + "</td>")
+				                .appendTo('#records_table');
+
+         					 });
+
+         					 groupName=true;
+
+
+         		 });
+
+         		 groupDate=true;	
+
+               
+            });
+
+
+   
+
+
+
+  	}
+	});
+	})
+
+
+
+
+
+
+
+	$("#maxb").click(function(){
+		$.ajax({
+  	url: "http://localhost:8080/api/projectdata/maxprojecthours",
+  	cache: false,
+  	success: function(response){
+    $("#resultarea").text(response.hours);
+     $("#prueba").text(response.project);
+
+
+
+  	}
+	});
+	})
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart(project, total) {
+
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Topping');
+        data.addColumn('number', 'Slices');
+        data.addRows([
+          [project, total],
+          
+        ]);
+
+        // Set chart options
+        var options = {'title':'How Much Pizza I Ate Last Night',
+                       'width':400,
+                       'height':300};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+
+
+      function drawTable() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Name');
+        data.addColumn('number', 'Salary');
+        data.addColumn('boolean', 'Full Time Employee');
+        data.addRows([
+          ['Mike',  {v: 10000, f: '$10,000'}, true],
+          ['Mike',  {v: 11000, f: '$11,000'}, true]
+        ]);
+
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+
+        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+      }
+
+
+
+
+
+
+    </script>
+
+
+
+</body>
+</html>
